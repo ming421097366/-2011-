@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title></title>
+	<style type="text/css">
+		.m-gallery {
+			width: 300px;
+
+		}
+		.m-gallery .rel {
+			position: relative;
+			width: 240px;
+			height: 80px;
+			border: 2px solid black;
+			overflow: hidden;			
+		}
+		.m-gallery .abs {
+			position: absolute;
+			top: 0px;
+			left: 0px;
+			width: 9999px;
+			height: 80px;
+		}
+		.m-gallery .imgage {
+			float: left;
+			width: 50px;
+			height: 50px;
+			margin: 15px;
+			background-color: red;			
+		}
+		.m-gallery .imgage:nth-child(odd) {
+			background-color: blue;
+		}
+		#toLeft {
+			float: left;
+		}
+		#toRight {
+			float: right;
+		}
+	</style>
+</head>
+<body>
+	<div class="m-gallery">
+		<button id="toLeft">&gt;-</button>
+		<button id="toRight">-&lt;</button>
+		<div class="rel">
+			<div class="abs" id="absWrap">	
+				<div class="imgage">1</div>
+				<div class="imgage">2</div>
+				<div class="imgage">3</div>
+				<div class="imgage">4</div>
+				<div class="imgage">5</div>
+				<div class="imgage">6</div>
+				<div class="imgage">7</div>
+				<div class="imgage">8</div>
+				<div class="imgage">9</div>
+				<div class="imgage">10</div>
+				<div class="imgage">11</div>
+				<div class="imgage">12</div>
+			</div>
+		</div>
+		
+	</div>
+	<script type="text/javascript">
+
+/*
+	属性渐变效果实现
+ */
+		function transitionStyle(from, to, duration, framesPerSecond, callback) {
+
+			var totalFrames = framesPerSecond * duration; //计算总的帧数
+			var step = function(curStyle, frame) {
+				var time = (frame / totalFrames) * duration * 1000;
+				setTimeout(function() {
+					callback(curStyle);
+				}, time);
+			}; //设置每一帧的动作
+
+			var frame = 1;
+			from = parseInt(from);
+			to = parseInt(to);
+			var stepLen = (to - from) / totalFrames;
+			while (frame < totalFrames) {
+				var curStyle = Math.ceil(from + stepLen * frame);
+				step(curStyle, frame);
+				frame++;
+			} //设置中间帧
+			step(from, 0); //设置第一帧
+			step(to, totalFrames); //设置最后一帧
+		}
+		window.addEventListener('load', function() {
+			var totalImages = 12;
+			var count = 0;
+			var toL = document.querySelector('#toLeft');
+			var toR = document.querySelector('#toRight');
+			var abs = document.querySelector('#absWrap');
+			var callback = function(curS) {
+				curS = curS + 'px';
+				abs.style.setProperty('left', curS);
+			}
+			var doToL = function() {
+				count++;
+				if (count > totalImages) {
+					alert('到达末尾');
+					return;
+				}
+				var left = document.defaultView.getComputedStyle(abs).getPropertyValue('left');
+				var from = parseInt(left);
+				var to = from - 80;
+				console.log(from + ' ' + to);
+				transitionStyle(from, to, 1, 36, callback);
+
+			};
+			var doToR = function() {
+				count--;
+				if (count < 0) {
+					alert('到达末尾');
+					return;
+				}
+				var left = document.defaultView.getComputedStyle(abs).getPropertyValue('left');
+				var from = parseInt(left);
+				var to = from + 80;
+				transitionStyle(from, to, 1, 36, callback);
+			};
+			toL.addEventListener('click', doToL, false);
+			toR.addEventListener('click', doToR, false);
+		}, false);
+	</script>
+</body>
+</html>

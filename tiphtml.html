@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>Document</title>
+	<style type="text/css">
+		
+
+		#tipDialog p {
+			margin: 0;
+			padding: 0;
+			font-size: 12px;
+			line-height: 12px;			
+		}
+		#tipDialog p.cur {
+			background-color: gray;
+			color: white;
+		}
+	</style>
+</head>
+<body>
+	<div>
+	<br>
+	<br>
+	<br>
+	<br>
+	aaaaaaaaaaaaaaaaaaaaaa<input type="text" id="inputId">
+	</div>
+	<!-- <div class='tip-dialog' id='tipDialog'> -->
+	</div>
+	<script type="text/javascript">
+		function TipDialog(ele,dataList) {
+			this._input = ele;
+			this._length = dataList.length;
+			this._ele = ele;
+			this._dataList = dataList;
+			this._fragment = null;
+			this._initDlg();
+			this._init();
+			this._addEvent();
+			
+		}
+		TipDialog.prototype.getValue = function() {
+			var item = this._getCurItem();			
+			var txt = item.childNodes[0];
+			return txt;
+		}
+
+		TipDialog.prototype.show = function() {
+			this.hide();
+			this._ele.appendChild(this._fragment);			
+			console.log('show');
+		}
+		TipDialog.prototype.hide = function() {
+			while(this._ele.firstChild) {
+				this._ele.removeChild(this._ele.firstChild);
+			}
+		}
+		TipDialog.prototype.setDataList = function(dataList) {
+			this._dataList = dataList;
+			this._init();
+		}
+
+		TipDialog.prototype._initDlg = function() {
+			// this._ele.style.setProperty('position', 'relative');
+			var div = document.createElement('DIV');
+				div.setAttribute('id', 'tipDialog');
+				div.style.setProperty('position', 'fixed');
+				div.style.setProperty('top', (this._input.offsetTop + this._input.offsetHeight) + 'px');
+				div.style.setProperty('left', (this._input.offsetLeft) + 'px')
+				div.style.setProperty('width', this._input.offsetWidth + 'px');
+			this._ele = div;
+			this._input.parentNode.appendChild(this._ele);
+
+		}
+
+		/*
+			根据数据列表，初始化dom fragment
+		 */
+		TipDialog.prototype._init = function() {
+
+			this._length = this._dataList.length;
+
+			var dataList = this._dataList;
+			var i;
+			var item;
+			var fra = document.createDocumentFragment();
+			var p;
+			var txt;
+			console.log(dataList);
+			for (i = 0; i < this._length; i++) {
+				p = document.createElement('P');//--------------item = 0 进不来循环
+				console.log(i);
+				txt = document.createTextNode(dataList[i]);
+				if (i === 0) {
+					p.className = 'cur';
+				}
+				p.setAttribute('data-index', i + '');
+				p.appendChild(txt);
+				fra.appendChild(p);
+			}
+			this._fragment = fra;
+			//this._ele.appendChild(fra)
+		};
+		TipDialog.prototype._getCurItem = function() {
+			var item = this._ele.querySelector('p.cur');
+			if (item) {
+				return item;
+			} else {
+				return null;
+			}
+		};
+
+		TipDialog.prototype._getItemByIndex = function(index) {
+				// var items = this._fragment;
+				var items = this._ele.getElementsByTagName('p');
+				
+				var i = 0;				
+				var item;
+				for (i = 0; item = items[i]; i++) {
+					var dataIndex = parseInt(item.dataset.index);
+					if (dataIndex === index) {
+						return item;
+					}
+				}
+				return null;
+			};
+
+		TipDialog.prototype._changeFocus = function(type) {
+			var curItem = this._getCurItem();
+			var curIndex = parseInt(curItem.dataset.index);
+			console.log(curIndex);
+			curItem.className = "";
+			var newIndex = 0;
+			if (type === 'up') {
+				newIndex = (curIndex - 1) < 0 ? (this._length -1) : (curIndex - 1) % this._length;
+			} else if (type === 'down') {
+				newIndex = (curIndex + 1) % this._length;
+				console.log(newIndex);
+			}
+			var newItem = this._getItemByIndex(newIndex);
+			newItem.className = 'cur';
+		};
+
+		TipDialog.prototype._addEvent = function() {
+			var self = this;
+			document.addEventListener('keydown', function(event) {
+				var KEY_UP = 38;
+				var KEY_DOWN = 40;
+				// console.log(event.keyCode);
+				if (event.keyCode === KEY_UP) {
+					self._changeFocus('up');
+				} else if (event.keyCode === KEY_DOWN) {
+					self._changeFocus('down');
+				} else {
+					return;
+				}
+			}, false);
+
+			this._input.addEventListener('blur',function(){
+				self.hide();
+			},false);
+			this._input.addEventListener('input',function(){
+				var value = parseInt(this.value);//this.getAttribute 和 this.value竟然不一样。
+				// console.log(value);
+				var arr = [];
+				for(var i = 0; i < value;i++) {
+					arr[i] = i;
+				}
+				// console.log(arr);------------------todo获得候选列表
+				self.setDataList(arr);
+				self.show();
+			});
+			this._input.addEventListener('keydown', function(event) {
+				var KEY_ENTER = 13;
+				var KEY_ESCAPE = 27;		
+				switch (event.keyCode) {
+					case KEY_ENTER:
+						//console.log(tipDialog.getValue());
+						this.value = self.getValue().wholeText;
+						self.hide();
+						break;
+					case KEY_ESCAPE:
+						self.hide();
+						break;
+					default:
+						break;
+				}
+			}, false);
+		};
+
+
+
+		
+		window.addEventListener('load',function(){
+			//var dlg = document.getElementById('tipDialog');
+			
+			//var tipDialog = new TipDialog(dlg,dataList);
+			//tipDialog.show();
+
+			var input = document.getElementById('inputId');
+			var tipDialog = new TipDialog(input,[]);			
+
+		},false)
+	</script>
+</body>
+</html>
